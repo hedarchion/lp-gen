@@ -1,4 +1,4 @@
-> Try it here: https://hedarchion.github.io/lp-gen/
+> Try it here: https://hedarchion.github.io/lp-gen?ver=1.1.1
 # Lesson Plan Generator (RPH)
 
 A simple, powerful, single-page web application to quickly generate and customize daily lesson plans (Rancangan Pengajaran Harian - RPH) from a CSV file. This tool is designed to streamline the lesson planning process for teachers, allowing for bulk creation and easy printing.
