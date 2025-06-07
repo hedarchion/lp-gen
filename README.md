@@ -33,4 +33,4 @@ Your `.csv` file must contain the following headers. The order does not matter, 
 ```No,Date,Day,Subject,Week,Class,Total student,Time,Period,"Content standard","Learning standard","Learning objectives","Success criteria","Pre-lesson","Lesson Development","Post Lesson",Reflection,"Strategi PDPC",EMK,BBM,KBATS,Pentaksiran,ABAD21,PETA```
 ---
 
-*Engineered with Gemini*
+*Engineered with Gemini 2.5 Pro (Preview)*
