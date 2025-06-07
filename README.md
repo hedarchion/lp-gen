@@ -3,7 +3,7 @@
 
 A simple, powerful, single-page web application to quickly generate and customize daily lesson plans (Rancangan Pengajaran Harian - RPH) from a CSV file. This tool is designed to streamline the lesson planning process for teachers, allowing for bulk creation and easy printing.
 
-![App Screenshot](https://i.imgur.com/wJyMQdD.png)
+![App Screenshot](https://i.imgur.com/qoRRpim.png)
 
 ## Key Features
 
