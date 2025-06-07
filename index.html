@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPH - Lesson Plan Creator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PapaParse for easy CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- Custom Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* General styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Table styling for consistent borders */
+        .rph-table, .meta-table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .rph-table th, .rph-table td,
+        .meta-table th, .meta-table td {
+            border: 1px solid black;
+            padding: 5pt;
+            vertical-align: top;
+            font-size: 8pt;
+            color: black;
+        }
+        
+        .rph-table th, .meta-table th {
+            font-weight: 700;
+            background-color: #d0e0e3;
+            text-align: left;
+        }
+
+        .rph-table .header-main {
+            background-color: #000000;
+            color: white;
+            font-weight: 700;
+            font-size: 7pt;
+        }
+        
+        [contenteditable="true"] {
+            min-height: 20px;
+            padding: 4px;
+            transition: background-color 0.3s;
+            width: 100%;
+            display: block;
+        }
+
+        [contenteditable="true"]:not(.bubble-text):focus {
+             outline: 2px solid #3B82F6;
+             background-color: #EFF6FF;
+        }
+        
+        .color-scheme-target {
+            background-color: #d0e0e3;
+            transition: background-color 0.3s ease;
+        }
+        
+        .side-notes-section p {
+            margin-bottom: 0.25rem;
+            font-weight: bold;
+        }
+        
+        /* UPDATED: Bubble styling for perfect centering */
+        .bubble-container {
+            display: inline-flex; 
+            align-items: center;      /* Vertical centering */
+            justify-content: center;  /* Horizontal centering */
+            width: auto; 
+            min-width: 50px;          /* Ensures it looks like a bubble even when empty */
+            padding: 4px 12px;        /* Balanced padding */
+            border-radius: 25px;
+            border: 1.5px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
+            background-color: #d0e0e3;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .bubble-container:focus-within {
+            border-color: #3B82F6;
+            background-color: #ffffff !important;
+        }
+
+        .bubble-text {
+            display: block;
+            white-space: nowrap;
+            font-size: 7.5pt;
+            outline: none;
+            padding: 0;            /* No padding on the text itself */
+            line-height: 1;        /* Normalized line height */
+        }
+
+        .bubble-text:focus {
+            background-color: transparent !important;
+        }
+        
+        .main-title {
+             font-family: 'Roboto Mono', monospace;
+        }
+
+        @media print {
+            body, html {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-6 no-print">
+            <h1 class="text-3xl font-bold text-gray-800">Lesson Plan Generator</h1>
+            <p class="text-gray-600 mt-1">Created by ASHROFU Engineered by Gemini (RPH).</p>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="no-print bg-white p-4 rounded-lg shadow-md mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+            <div>
+                <label for="csv-file-input" class="block text-sm font-medium text-gray-700">1. Import CSV File</label>
+                <input type="file" id="csv-file-input" accept=".csv" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+            </div>
+            <div>
+                <label for="color-picker" class="block text-sm font-medium text-gray-700">2. Change Color Scheme</label>
+                <input type="color" id="color-picker" value="#d0e0e3" class="mt-1 w-full h-10 rounded-md border-gray-300">
+            </div>
+            <div id="navigation-controls" class="hidden md:col-span-2 lg:col-span-1">
+                 <label class="block text-sm font-medium text-gray-700">3. Preview Records</label>
+                 <div class="flex items-center space-x-2 mt-1">
+                    <button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">&lt; Prev</button>
+                    <span id="record-status" class="text-sm font-medium text-gray-700 whitespace-nowrap">No file</span>
+                    <button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next &gt;</button>
+                 </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">4. Generate Printable Page</label>
+                <button id="export-btn" class="mt-1 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Generate Page</button>
+            </div>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="text-white text-lg flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating Page...
+            </div>
+        </div>
+
+        <!-- Lesson Plan Container -->
+        <div id="lesson-plan-container" class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+            <h3 class="main-title text-center font-black text-xl mb-4">R A N C A N G A N &nbsp; P E N G A J A R A N &nbsp; H A R I A N</h3>
+            <p class="mb-4 text-sm font-medium main-title"><strong>Nama Guru:</strong> <span contenteditable="true" data-key="Nama Guru">MUHAMMAD ASHRAF BIN AZAMMUDIN</span></p>
+
+             <table class="meta-table mb-4">
+                <tbody>
+                    <tr>
+                        <th class="color-scheme-target">Hari</th>
+                        <td><div contenteditable="true" data-key="Day"></div></td>
+                        <th class="color-scheme-target">Minggu</th>
+                        <td><div contenteditable="true" data-key="Week"></div></td>
+                        <th class="color-scheme-target">Jumlah pelajar</th>
+                        <td><div contenteditable="true" data-key="Total student"></div></td>
+                        <th class="color-scheme-target">Waktu</th>
+                        <td><div contenteditable="true" data-key="Period"></div></td>
+                    </tr>
+                    <tr>
+                        <th class="color-scheme-target">Tarikh</th>
+                        <td><div contenteditable="true" data-key="Date"></div></td>
+                        <th class="color-scheme-target">Subjek</th>
+                        <td><div contenteditable="true" data-key="Subject"></div></td>
+                        <th class="color-scheme-target">Kelas</th>
+                        <td><div contenteditable="true" data-key="Class"></div></td>
+                        <th class="color-scheme-target">Masa</th>
+                        <td><div contenteditable="true" data-key="Time"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <table class="rph-table">
+                 <tbody>
+                    <tr>
+                        <th class="header-main" style="width: 20%;">BAB</th>
+                        <th class="header-main" style="width: 50%;"></th>
+                        <th class="header-main" style="width: 30%;">REFLEKSI</th>
+                    </tr>
+                    <tr>
+                        <th class="color-scheme-target">STANDARD KANDUNGAN</th>
+                        <td>
+                            <div contenteditable="true" data-key="Content standard"></div>
+                            <div contenteditable="true" data-key="Learning standard"></div>
+                        </td>
+                        <td rowspan="3"><div contenteditable="true" data-key="Reflection"></div></td>
+                    </tr>
+                    <tr>
+                        <th class="color-scheme-target">OBJEKTIF PEMBELAJARAN</th>
+                        <td>
+                            <i>Pada akhir pembelajaran, murid dapat:</i>
+                            <div contenteditable="true" data-key="Learning objectives"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="color-scheme-target">KRITERIA KEJAYAAN</th>
+                        <td>
+                           <i>Pada akhir pembelajaran, murid dianggap berjaya sekiranya dapat:</i>
+                           <div contenteditable="true" data-key="Success criteria"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="color-scheme-target" rowspan="6">AKTIVITI</th>
+                        <th class="color-scheme-target">Pra Pembelajaran</th>
+                        <td rowspan="6" class="side-notes-section">
+                            <p>Strategi PdPC</p>
+                            <div class="bubble-container"><span contenteditable="true" data-key="Strategi PDPC" class="bubble-text"></span></div>
+                            
+                            <p>Elemen Merentasi Kurikulum</p>
+                            <div class="bubble-container"><span contenteditable="true" data-key="EMK" class="bubble-text"></span></div>
+
+                            <p>Bahan Bantu Mengajar</p>
+                            <div class="bubble-container"><span contenteditable="true" data-key="BBM" class="bubble-text"></span></div>
+                            
+                            <p>KBATS</p>
+                            <div class="bubble-container"><span contenteditable="true" data-key="KBATS" class="bubble-text"></span></div>
+
+                            <p>Pentaksiran</p>
+                            <div class="bubble-container"><span contenteditable="true" data-key="Pentaksiran" class="bubble-text"></span></div>
+                            
+                            <p>PdP ABAD 21</p>
+                            <div class="bubble-container"><span contenteditable="true" data-key="ABAD21" class="bubble-text"></span></div>
+
+                            <p>PETA i-Think</p>
+                           <div class="bubble-container"><span contenteditable="true" data-key="PETA" class="bubble-text"></span></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div contenteditable="true" data-key="Pre-lesson"></div></td>
+                    </tr>
+                     <tr>
+                        <th class="color-scheme-target">Pengembangan Pembelajaran (Aktiviti)</th>
+                    </tr>
+                    <tr>
+                        <td><div contenteditable="true" data-key="Lesson Development"></div></td>
+                    </tr>
+                     <tr>
+                        <th class="color-scheme-target">Pasca Pembelajaran</th>
+                    </tr>
+                    <tr>
+                        <td><div contenteditable="true" data-key="Post Lesson"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- STATE MANAGEMENT ---
+            let lessonData = [];
+            let currentIndex = -1;
+
+            // --- DOM ELEMENT REFERENCES ---
+            const csvFileInput = document.getElementById('csv-file-input');
+            const colorPicker = document.getElementById('color-picker');
+            const exportBtn = document.getElementById('export-btn');
+            const navigationControls = document.getElementById('navigation-controls');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const recordStatus = document.getElementById('record-status');
+            const lessonPlanContainer = document.getElementById('lesson-plan-container');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            // --- INITIALIZATION ---
+            function init() {
+                csvFileInput.addEventListener('change', handleFileSelect);
+                colorPicker.addEventListener('input', handleColorChange);
+                exportBtn.addEventListener('click', handleExportHtml);
+                prevBtn.addEventListener('click', handlePrev);
+                nextBtn.addEventListener('click', handleNext);
+                
+                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                    el.addEventListener('blur', saveCurrentRecord);
+                });
+
+                updateUI();
+                handleColorChange({ target: { value: colorPicker.value } });
+            }
+
+            // --- UI UPDATE LOGIC ---
+            function updateUI() {
+                const hasData = lessonData.length > 0;
+                navigationControls.classList.toggle('hidden', !hasData);
+                exportBtn.disabled = !hasData;
+
+                if (hasData) {
+                    recordStatus.textContent = `${currentIndex + 1} of ${lessonData.length}`;
+                    prevBtn.disabled = currentIndex === 0;
+                    nextBtn.disabled = currentIndex === lessonData.length - 1;
+                } else {
+                    recordStatus.textContent = 'No file';
+                    clearAllFields();
+                }
+            }
+
+            // --- EVENT HANDLERS ---
+            function handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        lessonData = results.data;
+                        if (lessonData.length > 0) {
+                            currentIndex = 0;
+                            displayRecord(currentIndex);
+                        } else {
+                            currentIndex = -1;
+                        }
+                        updateUI();
+                    },
+                    error: (error) => {
+                        console.error("CSV Parsing Error:", error);
+                        alert("Failed to parse CSV file. Please check the file format and column headers.");
+                    }
+                });
+            }
+
+            function handleColorChange(event) {
+                const newColor = event.target.value;
+                document.querySelectorAll('.color-scheme-target').forEach(el => {
+                    el.style.backgroundColor = newColor;
+                });
+                document.querySelectorAll('.bubble-container').forEach(el => {
+                    el.style.backgroundColor = newColor;
+                });
+            }
+            
+            function handlePrev() {
+                if (currentIndex > 0) {
+                    saveCurrentRecord();
+                    currentIndex--;
+                    displayRecord(currentIndex);
+                    updateUI();
+                }
+            }
+
+            function handleNext() {
+                if (currentIndex < lessonData.length - 1) {
+                    saveCurrentRecord();
+                    currentIndex++;
+                    displayRecord(currentIndex);
+                    updateUI();
+                }
+            }
+            
+            function handleExportHtml() {
+                if (lessonData.length === 0) {
+                    alert('Please import a CSV file first.');
+                    return;
+                }
+                
+                saveCurrentRecord();
+                loadingOverlay.classList.remove('hidden');
+
+                const pages = [];
+                const colorScheme = colorPicker.value;
+
+                lessonData.forEach(record => {
+                    const clone = lessonPlanContainer.cloneNode(true);
+                    
+                    clone.querySelectorAll('[data-key]').forEach(el => {
+                         const key = el.dataset.key.trim();
+                         if (record.hasOwnProperty(key)) {
+                            el.innerHTML = record[key];
+                         } else {
+                            el.innerHTML = '';
+                         }
+                    });
+
+                    clone.querySelectorAll('.color-scheme-target').forEach(el => el.style.backgroundColor = colorScheme);
+                    clone.querySelectorAll('.bubble-container').forEach(el => el.style.backgroundColor = colorScheme);
+
+                    pages.push(`<div class="page-wrapper">${clone.outerHTML}</div>`);
+                });
+
+                const styles = document.querySelector('style').innerHTML;
+                const fontLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(link => link.outerHTML).join('');
+
+                const printHtml = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Printable Lesson Plans</title>
+                        ${fontLinks}
+                        <style>
+                            /* Include all app styles */
+                            ${styles}
+                            /* Robust print-specific styles for pagination */
+                            @media print {
+                                body { 
+                                    margin: 0;
+                                    background-color: white !important;
+                                }
+                                .page-wrapper {
+                                    page-break-before: always;
+                                    page-break-inside: avoid;
+                                }
+                                .page-wrapper:first-child {
+                                    page-break-before: auto;
+                                }
+                                .lesson-plan-container {
+                                    box-shadow: none !important;
+                                    margin: 1.5cm; /* Standard print margin */
+                                    padding: 0 !important;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${pages.join('')}
+                    </body>
+                    </html>
+                `;
+                
+                const blob = new Blob([printHtml], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+
+                loadingOverlay.classList.add('hidden');
+            }
+
+            // --- CORE LOGIC ---
+            function displayRecord(index) {
+                if (index < 0 || index >= lessonData.length) return;
+                const record = lessonData[index];
+                
+                document.querySelectorAll('[data-key]').forEach(el => {
+                    const key = el.dataset.key.trim();
+                    el.innerHTML = ''; // Clear previous content
+                    if (record.hasOwnProperty(key)) {
+                        el.innerHTML = record[key]; 
+                    }
+                });
+            }
+
+            function saveCurrentRecord() {
+                if (currentIndex < 0 || currentIndex >= lessonData.length) return;
+                
+                const currentRecord = lessonData[currentIndex] || {};
+                document.querySelectorAll('[data-key]').forEach(el => {
+                    const key = el.dataset.key;
+                    currentRecord[key] = el.innerHTML;
+                });
+                lessonData[currentIndex] = currentRecord;
+            }
+            
+            function clearAllFields() {
+                document.querySelectorAll('[data-key]').forEach(el => {
+                    if (el.dataset.key !== 'Nama Guru') {
+                       el.innerHTML = '';
+                    }
+                });
+            }
+
+            // --- RUN ---
+            init();
+        });
+    </script>
+</body>
+</html>
