@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* General styles */
         body {
@@ -79,16 +79,14 @@
             font-weight: bold;
         }
         
-        /* UPDATED: Bubble styling for perfect centering */
         .bubble-container {
             display: inline-flex; 
-            align-items: center;      /* Vertical centering */
-            justify-content: center;  /* Horizontal centering */
+            align-items: center;
+            justify-content: center;
             width: auto; 
-            min-width: 50px;          /* Ensures it looks like a bubble even when empty */
-            padding: 4px 12px;        /* Balanced padding */
+            padding: 2px 12px;
             border-radius: 25px;
-            border: 1.5px solid rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(0, 0, 0, 0.1);
             margin-bottom: 0.5rem;
             background-color: #d0e0e3;
             transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -99,13 +97,13 @@
             background-color: #ffffff !important;
         }
 
+        /* UPDATED: Removed padding property */
         .bubble-text {
             display: block;
             white-space: nowrap;
-            font-size: 7.5pt;
+            font-size: 8pt;
             outline: none;
-            padding: 0;            /* No padding on the text itself */
-            line-height: 1;        /* Normalized line height */
+            line-height: 1.2;
         }
 
         .bubble-text:focus {
@@ -114,6 +112,9 @@
         
         .main-title {
              font-family: 'Roboto Mono', monospace;
+             font-weight: 400;
+             letter-spacing: 0.2em;
+             text-transform: uppercase;
         }
 
         @media print {
@@ -174,8 +175,8 @@
 
         <!-- Lesson Plan Container -->
         <div id="lesson-plan-container" class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
-            <h3 class="main-title text-center font-black text-xl mb-4">R A N C A N G A N &nbsp; P E N G A J A R A N &nbsp; H A R I A N</h3>
-            <p class="mb-4 text-sm font-medium main-title"><strong>Nama Guru:</strong> <span contenteditable="true" data-key="Nama Guru">MUHAMMAD ASHRAF BIN AZAMMUDIN</span></p>
+            <h3 class="main-title text-center text-xl mb-4">Rancangan Pengajaran Harian</h3>
+            <p class="mb-4 text-sm font-medium" style="font-family: 'Roboto Mono', monospace;"><strong>Nama Guru:</strong> <span contenteditable="true" data-key="Nama Guru">MUHAMMAD ASHRAF BIN AZAMMUDIN</span></p>
 
              <table class="meta-table mb-4">
                 <tbody>
@@ -423,6 +424,12 @@
                         <style>
                             /* Include all app styles */
                             ${styles}
+                            
+                            /* Force title centering in print view */
+                            .main-title {
+                                text-align: center !important;
+                            }
+
                             /* Robust print-specific styles for pagination */
                             @media print {
                                 body { 
