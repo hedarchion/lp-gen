@@ -48,6 +48,11 @@
             background-color: #d0e0e3;
             text-align: left;
         }
+        
+        /* Specific padding for subheaders */
+        .activity-subheader {
+            height: 11.979pt;
+        }
 
         .rph-table .header-main {
             background-color: #000000;
@@ -115,10 +120,26 @@
              letter-spacing: 0.2em;
              text-transform: uppercase;
         }
-
-        /* UPDATED: Specific height for activity subheaders */
-        .activity-subheader {
-            height: 11.979pt;
+        
+        /* Tab styles */
+        .tab-button {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            background-color: #e5e7eb;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            background-color: #ffffff;
+            border-color: #3B82F6;
+        }
+        .tab-content {
+            display: none;
+            padding-top: 1rem;
+        }
+        .tab-content.active {
+            display: block;
         }
 
         @media print {
@@ -143,26 +164,44 @@
         </div>
 
         <!-- Controls Section -->
-        <div class="no-print bg-white p-4 rounded-lg shadow-md mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
-            <div>
-                <label for="csv-file-input" class="block text-sm font-medium text-gray-700">1. Import CSV File</label>
-                <input type="file" id="csv-file-input" accept=".csv" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-            </div>
-            <div>
-                <label for="color-picker" class="block text-sm font-medium text-gray-700">2. Change Color Scheme</label>
-                <input type="color" id="color-picker" value="#d0e0e3" class="mt-1 w-full h-10 rounded-md border-gray-300">
-            </div>
-            <div id="navigation-controls" class="hidden md:col-span-2 lg:col-span-1">
-                 <label class="block text-sm font-medium text-gray-700">3. Preview Records</label>
-                 <div class="flex items-center space-x-2 mt-1">
-                    <button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">&lt; Prev</button>
-                    <span id="record-status" class="text-sm font-medium text-gray-700 whitespace-nowrap">No file</span>
-                    <button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next &gt;</button>
-                 </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">4. Generate Printable Page</label>
-                <button id="export-btn" class="mt-1 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Generate Page</button>
+        <div class="no-print bg-white p-4 rounded-lg shadow-md mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Data Input Section -->
+                <div>
+                    <div class="flex border-b border-gray-200">
+                        <button class="tab-button active" onclick="showTab('upload-tab')">1. Upload File</button>
+                        <button class="tab-button" onclick="showTab('paste-tab')">or Paste Data</button>
+                    </div>
+                    <div id="upload-tab" class="tab-content active">
+                         <label for="csv-file-input" class="block text-sm font-medium text-gray-700 mt-2">Select a .csv file from your computer.</label>
+                         <input type="file" id="csv-file-input" accept=".csv" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                    </div>
+                    <div id="paste-tab" class="tab-content">
+                        <label for="csv-paste-area" class="block text-sm font-medium text-gray-700 mt-2">Paste your CSV data below (including header row).</label>
+                        <textarea id="csv-paste-area" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="No,Date,Day,Subject..."></textarea>
+                        <button id="process-paste-btn" class="mt-2 w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">Process Pasted Data</button>
+                    </div>
+                </div>
+
+                <!-- Customization and Export Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                        <label for="color-picker" class="block text-sm font-medium text-gray-700">2. Change Color Scheme</label>
+                        <input type="color" id="color-picker" value="#d0e0e3" class="mt-1 w-full h-10 rounded-md border-gray-300">
+                    </div>
+                    <div id="navigation-controls" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">3. Preview Records</label>
+                         <div class="flex items-center space-x-2 mt-1">
+                            <button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">&lt; Prev</button>
+                            <span id="record-status" class="text-sm font-medium text-gray-700 whitespace-nowrap">No file</span>
+                            <button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next &gt;</button>
+                         </div>
+                    </div>
+                     <div>
+                        <label class="block text-sm font-medium text-gray-700">4. Generate Printable Page</label>
+                        <button id="export-btn" class="mt-1 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Generate Page</button>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -173,14 +212,14 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Generating Page...
+                Processing...
             </div>
         </div>
 
         <!-- Lesson Plan Container -->
         <div id="lesson-plan-container" class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
             <h3 class="main-title text-center text-xl mb-4">Rancangan Pengajaran Harian</h3>
-            <p class="mb-4 text-sm font-medium" style="font-family: 'Roboto Mono', monospace;"><strong>Nama Guru:</strong> <span contenteditable="true" data-key="Nama Guru">MUHAMMAD ASHRAF BIN AZAMMUDIN</span></p>
+            <p class="mb-4 text-sm font-medium" style="font-family: 'Roboto Mono', monospace;"><strong>Nama Guru:</strong> <span contenteditable="true" data-key="Nama Guru" id="teacher-name-field">MUHAMMAD ASHRAF BIN AZAMMUDIN</span></p>
 
              <table class="meta-table mb-4">
                 <tbody>
@@ -283,13 +322,24 @@
     </div>
 
     <script>
+        // --- TABS UI ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // --- STATE MANAGEMENT ---
             let lessonData = [];
             let currentIndex = -1;
+            let teacherName = ''; // Global variable for teacher's name
 
             // --- DOM ELEMENT REFERENCES ---
             const csvFileInput = document.getElementById('csv-file-input');
+            const csvPasteArea = document.getElementById('csv-paste-area');
+            const processPasteBtn = document.getElementById('process-paste-btn');
             const colorPicker = document.getElementById('color-picker');
             const exportBtn = document.getElementById('export-btn');
             const navigationControls = document.getElementById('navigation-controls');
@@ -298,17 +348,29 @@
             const recordStatus = document.getElementById('record-status');
             const lessonPlanContainer = document.getElementById('lesson-plan-container');
             const loadingOverlay = document.getElementById('loading-overlay');
+            const teacherNameField = document.getElementById('teacher-name-field');
 
             // --- INITIALIZATION ---
             function init() {
+                // Initialize teacher name from the template
+                teacherName = teacherNameField.innerText;
+
+                // Event Listeners
                 csvFileInput.addEventListener('change', handleFileSelect);
+                processPasteBtn.addEventListener('click', handlePaste);
                 colorPicker.addEventListener('input', handleColorChange);
                 exportBtn.addEventListener('click', handleExportHtml);
                 prevBtn.addEventListener('click', handlePrev);
                 nextBtn.addEventListener('click', handleNext);
                 
-                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                // Save other fields on blur
+                document.querySelectorAll('[contenteditable="true"]:not(#teacher-name-field)').forEach(el => {
                     el.addEventListener('blur', saveCurrentRecord);
+                });
+                
+                // Special handler for teacher name
+                teacherNameField.addEventListener('blur', () => {
+                    teacherName = teacherNameField.innerText;
                 });
 
                 updateUI();
@@ -331,12 +393,32 @@
                 }
             }
 
-            // --- EVENT HANDLERS ---
+            // --- DATA PROCESSING ---
             function handleFileSelect(event) {
                 const file = event.target.files[0];
                 if (!file) return;
 
-                Papa.parse(file, {
+                const reader = new FileReader();
+                reader.onload = (e) => processCsvData(e.target.result);
+                reader.readAsText(file);
+            }
+            
+            function handlePaste() {
+                const csvText = csvPasteArea.value;
+                if (!csvText.trim()) {
+                    alert('Please paste some CSV data first.');
+                    return;
+                }
+                processCsvData(csvText);
+            }
+
+            function processCsvData(csvString) {
+                // Persist teacher name before processing new data
+                teacherName = teacherNameField.innerText;
+                
+                loadingOverlay.classList.remove('hidden');
+                
+                Papa.parse(csvString, {
                     header: true,
                     skipEmptyLines: true,
                     complete: (results) => {
@@ -346,16 +428,20 @@
                             displayRecord(currentIndex);
                         } else {
                             currentIndex = -1;
+                            alert('No valid data found in the CSV.');
                         }
                         updateUI();
+                        loadingOverlay.classList.add('hidden');
                     },
                     error: (error) => {
                         console.error("CSV Parsing Error:", error);
-                        alert("Failed to parse CSV file. Please check the file format and column headers.");
+                        alert("Failed to parse CSV data. Please check the format and column headers.");
+                        loadingOverlay.classList.add('hidden');
                     }
                 });
             }
 
+            // --- EVENT HANDLERS ---
             function handleColorChange(event) {
                 const newColor = event.target.value;
                 document.querySelectorAll('.color-scheme-target').forEach(el => {
@@ -386,7 +472,7 @@
             
             function handleExportHtml() {
                 if (lessonData.length === 0) {
-                    alert('Please import a CSV file first.');
+                    alert('Please import data first.');
                     return;
                 }
                 
@@ -399,8 +485,13 @@
                 lessonData.forEach(record => {
                     const clone = lessonPlanContainer.cloneNode(true);
                     
+                    clone.querySelector('#teacher-name-field').innerText = teacherName;
+
                     clone.querySelectorAll('[data-key]').forEach(el => {
                          const key = el.dataset.key.trim();
+                         // Skip teacher name as it's handled globally
+                         if(key === "Nama Guru") return;
+
                          if (record.hasOwnProperty(key)) {
                             el.innerHTML = record[key];
                          } else {
@@ -473,8 +564,12 @@
                 if (index < 0 || index >= lessonData.length) return;
                 const record = lessonData[index];
                 
+                teacherNameField.innerText = teacherName; // Ensure global name is displayed
+
                 document.querySelectorAll('[data-key]').forEach(el => {
                     const key = el.dataset.key.trim();
+                    if (key === 'Nama Guru') return; // Skip teacher name
+                    
                     el.innerHTML = ''; // Clear previous content
                     if (record.hasOwnProperty(key)) {
                         el.innerHTML = record[key]; 
@@ -488,6 +583,7 @@
                 const currentRecord = lessonData[currentIndex] || {};
                 document.querySelectorAll('[data-key]').forEach(el => {
                     const key = el.dataset.key;
+                    if (key === 'Nama Guru') return; // Don't save teacher name to record
                     currentRecord[key] = el.innerHTML;
                 });
                 lessonData[currentIndex] = currentRecord;
